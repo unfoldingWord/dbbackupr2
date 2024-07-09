@@ -29,9 +29,24 @@ default-character-set = utf8mb4
 ```
 
 ## Builds
+### Standalone binary
 This script is being built into a binary with the help of [pyinstaller](https://pyinstaller.org/en/stable/), 
 
 Running pyinstaller, when a `.venv` has been created.
 ```
 pyinstaller --onefile --paths=.venv/lib/python3.10/site-packages dbbackupr2.py
 ```
+
+I could get this script to work locally, on Python 3.10, 
+but not on our server, which still has Python 3.7. Hence
+the next approach...
+
+### Docker build
+Please see the included `Dockerfile`. After building, you can run the job as follows
+```commandline
+docker run --rm -v /path/to/backup:/config/dbbackup -v /path/to/dbbackupr2.conf:/etc/dbbackupr2.conf -v ~/.my.cnf:/root/.my.cnf myuser/dbbackupr2 
+```
+Mounts:
+- /path/to/backup (where your backups are stored)
+- /path/to/dbbackupr2.conf (your local config file)
+- ~/.my.cnf (MySQL credentials)
