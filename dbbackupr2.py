@@ -101,7 +101,6 @@ class DBBackupR2:
                 success = self.__compress_backup(backup_file)
                 if success:
                     print('Succeeded!')
-                exit()
 
 
 obj_dbbackup = DBBackupR2()
