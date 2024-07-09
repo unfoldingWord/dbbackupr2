@@ -2,16 +2,16 @@
 
 import subprocess
 import os
-#from dotenv import load_dotenv
+import time
+from dotenv import dotenv_values
 from datetime import datetime
 
 
 class DBBackupR2:
     def __init__(self):
-        #load_dotenv()
+        self.__config = dotenv_values("/etc/dbbackupr2.conf")
 
-        #self.backup_dir = os.getenv('BACKUP_DIR')
-        self.backup_dir = '/config/dbbackup'
+        self.backup_dir = self.__config['BACKUP_DIR']
 
     def __get_databases(self, exclude_system=True):
         lst_cmd = [
@@ -58,7 +58,7 @@ class DBBackupR2:
 
     def __compress_backup(self, file):
         lst_cmd = [
-            '/usr/bin/bzip2',
+            '/usr/bin/bzip2', '-f',
             file
         ]
 
@@ -71,16 +71,27 @@ class DBBackupR2:
         return True
 
     def restore_database(self, db, host):
-        # TODO: less urgent, more like nice to have
+        # TODO: less urgent, maybe nice to have?
         pass
 
-    def __remove_old_backups(self):
-        # TODO: needs to be implemented soon
-        pass
+    def __remove_old_backups(self, prefix, keep_days):
+        path = self.backup_dir
+        now = time.time()
+
+        for filename in os.listdir(path):
+            if filename.find(prefix) == 0:  # Starts with the prefix
+                full_path = os.path.join(path, filename)
+                if os.path.getmtime(full_path) < now - keep_days * 86400:
+                    if os.path.isfile(full_path):
+                        print(f'Removing: {full_path}')
+                        os.remove(full_path)
 
     def backup_databases(self):
-        # TODO: should I enable removal of old backup file?
+        # Remove old backups
+        mysql_keep_days = int(self.__config['MYSQL_KEEP_DAYS'])
+        self.__remove_old_backups('mysql-', mysql_keep_days)
 
+        # Get all the DB's we want to back up
         lst_databases = self.__get_databases()
 
         for db in lst_databases:
@@ -90,6 +101,7 @@ class DBBackupR2:
                 success = self.__compress_backup(backup_file)
                 if success:
                     print('Succeeded!')
+                exit()
 
 
 obj_dbbackup = DBBackupR2()
