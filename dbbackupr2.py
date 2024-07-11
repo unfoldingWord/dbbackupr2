@@ -36,18 +36,16 @@ class DBBackupR2:
         return lst_databases
 
     def __make_backup(self, db):
-        lst_cmd = [
-            '/usr/bin/mysqldump',
-            db
-        ]
+        # Dump database, but remove that pesky sandbox statement (because of compatibility issues)!
+        cmd = f'/usr/bin/mysqldump {db} | grep -v \'enable the sandbox mode\''
 
         # Write to file
         datestamp = datetime.now().strftime('%Y-%m-%d')
         backup_file = f"{self.backup_dir}/mysql-{db}-{datestamp}.sql"
 
         with open(backup_file, 'w') as f_backup:
-            result = subprocess.run(lst_cmd, stdout=f_backup, stderr=subprocess.PIPE,
-                                    universal_newlines=True)
+            result = subprocess.run(cmd, stdout=f_backup, stderr=subprocess.PIPE,
+                                    universal_newlines=True, shell=True)
             if result.returncode > 0:
                 print(result.stderr)
 
