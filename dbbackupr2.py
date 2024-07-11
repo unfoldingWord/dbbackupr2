@@ -27,9 +27,6 @@ class DBBackupR2:
         # split output into a list
         lst_databases = result.stdout.split('\n')
 
-        # remove first element (header)
-        lst_databases.pop(0)
-
         # Exclude system objects
         if exclude_system:
             exclude_dbs = ['information_schema', 'mysql', 'performance_schema', 'sys']
