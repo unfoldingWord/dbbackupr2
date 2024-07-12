@@ -37,7 +37,7 @@ class DBBackupR2:
 
     def __make_backup(self, db):
         # Dump database, but remove that pesky sandbox statement (because of compatibility issues)!
-        cmd = f'/usr/bin/mysqldump {db} | grep -v \'enable the sandbox mode\''
+        cmd = f'/usr/bin/mysqldump --routines {db} | grep -v \'enable the sandbox mode\''
 
         # Write to file
         datestamp = datetime.now().strftime('%Y-%m-%d')
