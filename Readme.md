@@ -4,8 +4,8 @@ Right now, it only backs up MySQL databases, but _'maybe maybe'_ in the future
 we might want to extend to RPM and Postgres as well.
 
 ## How it works
-It is **assumed** that a configuration file `/etc/dbbackupr2.conf` exists. 
-An example of the file can be found in this repo as `dbbackupr2.conf`
+It is **assumed** that an environment file `dbbackupr2.env` exists. 
+An example of the file can be found in this repo as `dbbackupr2.env`
 
 The script makes a list of all databases existing on the MySQL host, does a
 `mysqldump` per database, and then makes it into a bzip2 archive, to save space.
@@ -30,23 +30,24 @@ default-character-set = utf8mb4
 
 ## Builds
 ### Standalone binary
-This script is being built into a binary with the help of [pyinstaller](https://pyinstaller.org/en/stable/), 
+One beautiful day, I would like to see this script being built into a binary with the help of [pyinstaller](https://pyinstaller.org/en/stable/), 
 
 Running pyinstaller, when a `.venv` has been created.
 ```
 pyinstaller --onefile --paths=.venv/lib/python3.10/site-packages dbbackupr2.py
 ```
 
-I could get this script to work locally, on Python 3.10, 
-but not on our server, which still has Python 3.7. Hence
-the next approach...
+### Running with a .venv
+Setup your .venv, install the requirements, and run.
+Maybe instructions coming soon...
 
 ### Docker build
 Please see the included `Dockerfile`. After building, you can run the job as follows
 ```commandline
-docker run --rm -v /path/to/backup:/config/dbbackup -v /path/to/dbbackupr2.conf:/etc/dbbackupr2.conf -v ~/.my.cnf:/root/.my.cnf myuser/dbbackupr2 
+docker run -it --rm --env-file /path/to/dbbackupr2.env -v /path/to/backup:/dbbackup -v /path/to/.my.cnf:/root/.my.cnf myuser/dbbackupr2 
 ```
-Mounts:
-- /path/to/backup (where your backups are stored)
-- /path/to/dbbackupr2.conf (your local config file)
-- ~/.my.cnf (MySQL credentials)
+
+File paths:
+- `/path/to/dbbackupr2.env` (your local environment file)
+- `/path/to/backup` (where your backups are stored)
+- `/path/to/.my.cnf` (MySQL credentials)
