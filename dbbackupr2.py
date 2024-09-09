@@ -3,15 +3,15 @@
 import subprocess
 import os
 import time
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 from datetime import datetime
 
 
 class DBBackupR2:
     def __init__(self):
-        self.__config = dotenv_values("/etc/dbbackupr2.conf")
+        load_dotenv()
 
-        self.backup_dir = self.__config['BACKUP_DIR']
+        self.backup_dir = os.getenv('BACKUP_DIR')
 
     def __get_databases(self, exclude_system=True):
         lst_cmd = [
@@ -37,7 +37,7 @@ class DBBackupR2:
 
     def __make_backup(self, db):
         # Dump database, but remove that pesky sandbox statement (because of compatibility issues)!
-        cmd = f'/usr/bin/mysqldump --routines {db} | grep -v \'enable the sandbox mode\''
+        cmd = f'/bin/mysqldump --routines {db} | grep -v \'enable the sandbox mode\''
 
         # Write to file
         datestamp = datetime.now().strftime('%Y-%m-%d')
@@ -83,11 +83,14 @@ class DBBackupR2:
 
     def backup_databases(self):
         # Remove old backups
-        mysql_keep_days = int(self.__config['MYSQL_KEEP_DAYS'])
+        mysql_keep_days = int(os.getenv('MYSQL_KEEP_DAYS'))
         self.__remove_old_backups('mysql-', mysql_keep_days)
 
         # Get all the DB's we want to back up
-        lst_databases = self.__get_databases()
+        if os.getenv('STAGE') == 'dev' and os.getenv('DEBUG_DB'):
+            lst_databases = [os.getenv('DEBUG_DB')]
+        else:
+            lst_databases = self.__get_databases()
 
         for db in lst_databases:
             if len(db) > 0:
