@@ -174,7 +174,8 @@ class DBBackupR2:
     def backup_databases(self):
         # Remove old backups
         mysql_keep_days = int(os.getenv('MYSQL_KEEP_DAYS'))
-        self.__remove_old_backups('mysql-', mysql_keep_days)
+        prefix = os.getenv('BACKUP_PREFIX')
+        self.__remove_old_backups(f"{prefix}-", mysql_keep_days)
 
         # Get all the DB's we want to back up
         lst_databases = self.__get_databases()
